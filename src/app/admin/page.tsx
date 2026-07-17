@@ -6357,7 +6357,9 @@ const VideoSourceConfig = ({
   const [showValidationModal, setShowValidationModal] = useState(false);
   const [showWeightModal, setShowWeightModal] = useState(false);
   const [showSpecialSourcesModal, setShowSpecialSourcesModal] = useState(false);
+  const [showClientAdSourcesModal, setShowClientAdSourcesModal] = useState(false);
   const [specialSourceDraftApis, setSpecialSourceDraftApis] = useState<string[]>([]);
+  const [clientAdSourceDraftApis, setClientAdSourceDraftApis] = useState<string[]>([]);
   const [weightDraftSources, setWeightDraftSources] = useState<DataSource[]>(
     []
   );
@@ -6511,6 +6513,28 @@ const VideoSourceConfig = ({
       closeSpecialSourcesModal();
     }).catch(() => {
       console.error('操作失败', 'set_special_sources');
+    });
+  };
+
+  const openClientAdSourcesModal = () => {
+    setClientAdSourceDraftApis(config?.ClientAdSourceApis || []);
+    setShowClientAdSourcesModal(true);
+  };
+
+  const closeClientAdSourcesModal = () => {
+    setShowClientAdSourcesModal(false);
+    setClientAdSourceDraftApis([]);
+  };
+
+  const handleSaveClientAdSources = async () => {
+    await withLoading('saveClientAdSources', async () => {
+      await callSourceApi({
+        action: 'set_client_ad_sources',
+        keys: clientAdSourceDraftApis,
+      });
+      closeClientAdSourcesModal();
+    }).catch(() => {
+      console.error('操作失败', 'set_client_ad_sources');
     });
   };
 
@@ -7375,52 +7399,73 @@ const VideoSourceConfig = ({
               <div className='hidden sm:block w-px h-6 bg-gray-300 dark:bg-gray-600 order-2'></div>
             </>
           )}
-          <div className='flex items-center gap-2 overflow-x-auto whitespace-nowrap order-1 sm:order-2'>
-            <button
-              onClick={openSpecialSourcesModal}
-              className={`${buttonStyles.secondary} flex shrink-0 items-center gap-1.5 whitespace-nowrap`}
-              title='批量选择哪些视频源属于特殊源'
-            >
-              <Settings size={14} />
-              <span>特殊源设置</span>
-              {(config?.SpecialSourceApis?.length || 0) > 0 && (
-                <span className='rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'>
-                  {config?.SpecialSourceApis?.length}
-                </span>
-              )}
-            </button>
-            <button
-              onClick={openWeightModal}
-              className={`${buttonStyles.secondary} flex shrink-0 items-center gap-1.5 whitespace-nowrap`}
-              title='拖动排序并批量生成推荐权重'
-            >
-              <Settings size={14} />
-              <span>权重设置</span>
-            </button>
-            <button
-              onClick={() => setShowValidationModal(true)}
-              disabled={isValidating}
-              className={`px-3 py-1 text-sm rounded-lg transition-colors flex shrink-0 items-center space-x-1 whitespace-nowrap ${
-                isValidating ? buttonStyles.disabled : buttonStyles.primary
-              }`}
-            >
-              {isValidating ? (
-                <>
-                  <div className='w-3 h-3 border border-white border-t-transparent rounded-full animate-spin'></div>
-                  <span>检测中...</span>
-                </>
-              ) : (
-                '有效性检测'
-              )}
-            </button>
-            <button
-              onClick={() => setShowAddForm(!showAddForm)}
-              className={`${
-                showAddForm ? buttonStyles.secondary : buttonStyles.success
-              } shrink-0 whitespace-nowrap`}
-            >
-              {showAddForm ? '取消' : '添加视频源'}
-            </button>
+          <div className='flex w-full flex-col gap-2 order-1 sm:order-2 sm:w-auto sm:flex-row sm:items-center sm:gap-2'>
+            <div className='w-full overflow-x-auto sm:w-auto'>
+              <div className='ml-auto flex w-max items-center gap-2 whitespace-nowrap'>
+                <button
+                  onClick={openSpecialSourcesModal}
+                  className={`${buttonStyles.secondary} flex shrink-0 items-center gap-1.5 whitespace-nowrap`}
+                  title='批量选择哪些视频源属于特殊源'
+                >
+                  <Settings size={14} />
+                  <span>特殊源设置</span>
+                  {(config?.SpecialSourceApis?.length || 0) > 0 && (
+                    <span className='rounded-full bg-rose-100 px-1.5 py-0.5 text-[10px] font-semibold text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'>
+                      {config?.SpecialSourceApis?.length}
+                    </span>
+                  )}
+                </button>
+                <button
+                  onClick={openWeightModal}
+                  className={`${buttonStyles.secondary} flex shrink-0 items-center gap-1.5 whitespace-nowrap`}
+                  title='拖动排序并批量生成推荐权重'
+                >
+                  <Settings size={14} />
+                  <span>权重设置</span>
+                </button>
+                <button
+                  onClick={openClientAdSourcesModal}
+                  className={`${buttonStyles.secondary} flex shrink-0 items-center gap-1.5 whitespace-nowrap`}
+                  title='选择在手机/电视客户端播放时自动去广告的视频源'
+                >
+                  <Settings size={14} />
+                  <span>客户端广告配置</span>
+                  {(config?.ClientAdSourceApis?.length || 0) > 0 && (
+                    <span className='rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'>
+                      {config?.ClientAdSourceApis?.length}
+                    </span>
+                  )}
+                </button>
+              </div>
+            </div>
+            <div className='w-full overflow-x-auto sm:w-auto'>
+              <div className='ml-auto flex w-max items-center gap-2 whitespace-nowrap'>
+                <button
+                  onClick={() => setShowValidationModal(true)}
+                  disabled={isValidating}
+                  className={`px-3 py-1 text-sm rounded-lg transition-colors flex shrink-0 items-center space-x-1 whitespace-nowrap ${
+                    isValidating ? buttonStyles.disabled : buttonStyles.primary
+                  }`}
+                >
+                  {isValidating ? (
+                    <>
+                      <div className='w-3 h-3 border border-white border-t-transparent rounded-full animate-spin'></div>
+                      <span>检测中...</span>
+                    </>
+                  ) : (
+                    '有效性检测'
+                  )}
+                </button>
+                <button
+                  onClick={() => setShowAddForm(!showAddForm)}
+                  className={`${
+                    showAddForm ? buttonStyles.secondary : buttonStyles.success
+                  } shrink-0 whitespace-nowrap`}
+                >
+                  {showAddForm ? '取消' : '添加视频源'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -7654,6 +7699,119 @@ const VideoSourceConfig = ({
                     }`}
                   >
                     {isLoading('saveSpecialSources') ? '保存中...' : '保存'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>,
+          document.body
+        )}
+
+      {showClientAdSourcesModal &&
+        createPortal(
+          <div
+            className='fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm'
+            onClick={closeClientAdSourcesModal}
+          >
+            <div
+              className='flex max-h-[84vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl dark:border-gray-700 dark:bg-gray-800'
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className='flex items-start justify-between gap-4 border-b border-gray-200 px-6 py-5 dark:border-gray-700'>
+                <div>
+                  <h3 className='text-xl font-semibold text-gray-900 dark:text-gray-100'>
+                    客户端去广告配置
+                  </h3>
+                  <p className='mt-1 text-sm text-gray-600 dark:text-gray-400'>
+                    勾选后，用户使用 MoonTVPlus APP 或 OrionTV 观看这些视频源时，会自动过滤片头/插播广告。
+                  </p>
+                </div>
+                <button
+                  onClick={closeClientAdSourcesModal}
+                  className='text-2xl leading-none text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300'
+                  aria-label='关闭客户端去广告配置弹窗'
+                >
+                  ×
+                </button>
+              </div>
+
+              <div className='min-h-0 flex-1 overflow-y-auto px-6 py-5'>
+                <div className='grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3'>
+                  {config?.SourceConfig?.map((source) => (
+                    <label
+                      key={source.key}
+                      className='flex cursor-pointer items-center space-x-3 rounded-lg border border-gray-200 p-3 transition-colors hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900/50'
+                    >
+                      <input
+                        type='checkbox'
+                        checked={clientAdSourceDraftApis.includes(source.key)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setClientAdSourceDraftApis((prev) =>
+                              prev.includes(source.key) ? prev : [...prev, source.key]
+                            );
+                          } else {
+                            setClientAdSourceDraftApis((prev) =>
+                              prev.filter((api) => api !== source.key)
+                            );
+                          }
+                        }}
+                        className='rounded border-gray-300 text-amber-600 focus:ring-amber-500 dark:border-gray-600 dark:bg-gray-700'
+                      />
+                      <div className='min-w-0 flex-1'>
+                        <div className='truncate text-sm font-medium text-gray-900 dark:text-gray-100'>
+                          {source.name}
+                        </div>
+                        <div className='truncate text-xs text-gray-500 dark:text-gray-400'>
+                          {source.key}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div className='flex flex-wrap items-center justify-between gap-3 border-t border-gray-200 bg-gray-50 px-6 py-4 dark:border-gray-700 dark:bg-gray-900/30'>
+                <div className='flex flex-wrap gap-2'>
+                  <button
+                    onClick={() => setClientAdSourceDraftApis([])}
+                    className={buttonStyles.quickAction}
+                  >
+                    全不选
+                  </button>
+                  <button
+                    onClick={() => {
+                      const allApis =
+                        config?.SourceConfig?.filter((source) => !source.disabled).map(
+                          (source) => source.key
+                        ) || [];
+                      setClientAdSourceDraftApis(allApis);
+                    }}
+                    className={buttonStyles.quickAction}
+                  >
+                    全选启用源
+                  </button>
+                </div>
+                <div className='flex items-center gap-3'>
+                  <span className='text-sm text-gray-600 dark:text-gray-400'>
+                    已选择：
+                    <span className='font-medium text-amber-600 dark:text-amber-400'>
+                      {clientAdSourceDraftApis.length} 个源
+                    </span>
+                  </span>
+                  <button onClick={closeClientAdSourcesModal} className={buttonStyles.secondary}>
+                    取消
+                  </button>
+                  <button
+                    onClick={handleSaveClientAdSources}
+                    disabled={isLoading('saveClientAdSources')}
+                    className={`px-4 py-2 ${
+                      isLoading('saveClientAdSources')
+                        ? buttonStyles.disabled
+                        : buttonStyles.success
+                    }`}
+                  >
+                    {isLoading('saveClientAdSources') ? '保存中...' : '保存'}
                   </button>
                 </div>
               </div>

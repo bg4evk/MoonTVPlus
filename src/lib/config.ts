@@ -359,6 +359,7 @@ async function getInitConfig(
       : Array.isArray(cfgFile.specialSourceApis)
       ? cfgFile.specialSourceApis
       : [],
+    ClientAdSourceApis: [],
   };
 
   // 用户信息已迁移到新版数据库，不再填充 UserConfig.Users
@@ -674,6 +675,12 @@ export function configSelfCheck(adminConfig: AdminConfig): AdminConfig {
   ) {
     adminConfig.SpecialSourceApis = [];
   }
+  if (
+    !adminConfig.ClientAdSourceApis ||
+    !Array.isArray(adminConfig.ClientAdSourceApis)
+  ) {
+    adminConfig.ClientAdSourceApis = [];
+  }
   adminConfig.LiveRefreshIntervalHours = normalizeLiveRefreshIntervalHours(
     adminConfig.LiveRefreshIntervalHours
   );
@@ -727,6 +734,9 @@ export function configSelfCheck(adminConfig: AdminConfig): AdminConfig {
   const validSourceKeys = new Set(adminConfig.SourceConfig.map((source) => source.key));
   adminConfig.SpecialSourceApis = Array.from(
     new Set((adminConfig.SpecialSourceApis || []).filter((key) => validSourceKeys.has(key)))
+  );
+  adminConfig.ClientAdSourceApis = Array.from(
+    new Set((adminConfig.ClientAdSourceApis || []).filter((key) => validSourceKeys.has(key)))
   );
 
   // 自定义分类去重
